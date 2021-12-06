@@ -1,0 +1,19 @@
+-- Using window functions
+-- Examining the data
+SELECT * FROM state_climate;
+-- Finding out how the average temperature changes over time in each state
+SELECT state, year, tempf, tempc, AVG(tempc) OVER (PARTITION BY state ORDER BY year) AS "running_avg_temp" FROM state_climate;
+-- Finding the lowest temperatures for each state
+SELECT state, year, tempc, MIN(tempc) OVER (PARTITION BY state ORDER BY tempc) AS "lowest_temp" FROM state_climate;
+-- Finding the highest temperatures for each state
+SELECT state, year, tempc, MAX(tempc) OVER (PARTITION BY state ORDER BY tempc) AS "highest_temp" FROM state_climate;
+-- Investigating how temperature has changed each year in each state
+SELECT state, year, tempc, tempc - LAG(tempc, 1, 0) OVER (PARTITION BY state ORDER BY tempc) AS "change_in_temp" FROM state_climate;
+-- Getting the rank of the coldest temperatures to know which years or states recorded the lowest temperature
+SELECT RANK() OVER (ORDER BY tempc) AS "coldest_rank", year, state, tempc FROM state_climate;
+-- Getting the rank of the warmest temperatures for each state to know which years in each state recorded the highest temperature
+SELECT RANK() OVER (PARTITION BY state ORDER BY tempc DESC) AS "warmest_rank", year, state, tempc FROM state_climate;
+-- Getting the quartiles of temperature for each state with the top quartiles being the coldest years
+SELECT NTILE(4) OVER (PARTITION BY state ORDER BY tempc) AS "quartile", year, state, tempc FROM state_climate;
+-- Getting the quintiles of temperature with the top quintiles being the coldest years
+SELECT NTILE(5) OVER (ORDER BY tempc) AS "quintile", year, state, tempc FROM state_climate;
